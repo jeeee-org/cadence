@@ -28,7 +28,11 @@ cd cadence
   1. Claude Code に read-only の infra MCP を1つ設定する。
   2. そのサーバ名を確認し、`skills/cadence/flows/audit-reliability.md` の `mcp: infra` を**その名前に合わせる**
      （または MCP 側を `infra` という名前で登録する）。
-- ⚠️ ライブ環境に**書き込む** MCP は使わない。参照系のみ。
+- 🔒 **read-only は MCP/権限で物理的に固める**（指示遵守だけに頼らない／SKILL.md「read-only の担保方針」）：
+  1. 繋ぐ MCP は**参照系のみ**。書き込み系ツールを持つ MCP はそもそも繋がない。
+  2. MCP/CLI の**資格情報を read-only に絞る**（参照のみの k8s ServiceAccount、read 権限だけの IAM 等）。万一の書き込み試行を権限側で弾く。
+  3. 可能なら本番に書き込めない環境/ネットワークで回す。
+  - メイン Opus は Edit/Write を持つため、「書くな」という指示は補助層にすぎない。上の 1〜3 を先に固めること。
 
 ## 3. 実走
 ```bash
