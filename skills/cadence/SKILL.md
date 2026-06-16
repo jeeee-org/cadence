@@ -78,8 +78,19 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
 **人が各変更を見て承認する有人前提なら、これで十分**——「書き込み境界をエンジンで強制」が要るのは
 **無人運用/大量反復**に振る時だけ（そこまで要らないなら過剰投資）。read-only / edit はフロー単位で選ぶ。
 
+## 編集モードと人の承認（`mode: edit`）
+編集を伴うフロー（`mode: edit`）では、cadence は変更を**適用**する。安全網は read-only の物理境界ではなく
+**レビュー（supervise）＋決定論ゲート＋人の承認**。有人前提でこれを必ず効かせる：
+
+- **`require_human_approval: true`（フロー）/ `human_approval: required`（step）**：その step では**実際にユーザーに提示して承認を待つ**。承認が得られるまで次に進まない。典型は ①適用の直前（`propose`：差分プレビュー＋影響範囲＋ロールバックを見せて承認）②`COMPLETE` の直前（最終サインオフ）。
+- **適用は最小・スコープ厳守・可逆**。承認された変更だけを適用し、スコープ外は触らない。破壊的・非可逆な操作は事前に明示して承認を取る。
+- **ライブ本番のミューテーションは既定で行わない**：修正は source of truth（IaC / runbook / 設定ファイル）の編集に留め、本番適用（`terraform apply` 等）は通常の人が回す変更プロセスに委ねる。MCP の書き込みで適用したい場合は `propose` の承認に明示的に含める（opt-in）。
+- **無人で大改修しない**：1件ずつ、人が見て承認できる粒度で（有人・レビュー前提）。
+
 ## フロー定義の書式（`flows/*.md`）
-各フローは「purpose / mode / initial / max_cycles / steps（persona・tools・parallel・mcp・instruction・遷移）/ convergence / gates(任意)」を持つ。新しい監査・調査タイプを足したい時は、この書式の `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。同梱例：`flows/audit-reliability.md`（SRE read-only 信頼性監査）。
+各フローは「purpose / mode / initial / max_cycles / steps（persona・tools・parallel・mcp・instruction・遷移）/ convergence / gates(任意) / （edit 系は）human_approval」を持つ。新しいフローを足したい時は、この書式の `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。同梱例：
+- `flows/audit-reliability.md` — SRE read-only 信頼性監査（`mode: read-only`）。
+- `flows/fix-reliability.md` — 信頼性 issue の修正（`mode: edit`・有人承認。audit の指摘を入力に立案→承認→適用→検証→再レビュー）。
 
 ## 注意・限界
 - **read-only は指示遵守だけでは弱い**（メインは Edit/Write を持つ）。**MCP/権限で物理的に固める**のが本筋（上の「read-only の担保方針」）。ライブに触る MCP は参照系のみ・資格情報は read-only に。
