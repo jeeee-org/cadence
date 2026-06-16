@@ -51,7 +51,12 @@ cadence/
 - **決定論ゲート**：モデルのブレは LLM 判定でなく**コマンドの exit code**で弾く（[references/gates.md](skills/cadence/references/gates.md)）。
 - **高ステークス判断は quorum 外注**：確信が要る step だけ多モデル合議に回す（コスト N 倍なのでここぞに限定）。
 
+## 状態 / 引き継ぎ
+- **v0 雛形**。構造は一通り完成、`~/.claude` 配置・スキル登録まで確認済み。**実走検証は未**。
+- 実走には **infra MCP がつながった PC** が要る。その引き継ぎ手順は [HANDOFF.md](HANDOFF.md)
+  （インストール・MCP 接続・実走・検証チェックリスト・push 認証の注意）。
+
 ## 注意・限界
 - read-only はメイン権限（Edit/Write あり）では**運用規律で担保**。ライブに触る MCP は参照系のみに。
 - ペルソナ/フローはテキスト指示であり実行系の強制ではない。step ごとに自己点検する。
-- 実走検証はこれから（v0 雛形）。
+- cadence は MCP を自前で起動しない。**ホスト Claude Code の MCP 設定**を使い、フローの `mcp:` はラベル（[HANDOFF.md](HANDOFF.md) §2）。
