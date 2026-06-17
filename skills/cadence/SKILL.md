@@ -91,6 +91,7 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
 各フローは「purpose / mode / initial / max_cycles / steps（persona・tools・parallel・mcp・instruction・遷移）/ convergence / gates(任意) / （edit 系は）human_approval」を持つ。新しいフローを足したい時は、この書式の `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。同梱例：
 - `flows/audit-reliability.md` — SRE read-only 信頼性監査（`mode: read-only`）。
 - `flows/error-analysis.md` — エラー/インシデントの根本原因分析（`mode: read-only`。症状整理→原因候補列挙→証拠で確認/反証→収束。割れたら quorum 外注、再現は決定論ゲート化可）。
+- `flows/investigate-subsystem.md` — サブシステム/モジュールの動作・構造把握（`mode: read-only`。責務/エントリ/制御・データフロー/不変条件/依存/エッジを file:line 接地でマップ。バグ探しでなく正確な理解が目的）。
 - `flows/fix-reliability.md` — 信頼性 issue の修正（`mode: edit`・有人承認。audit/RCA の指摘を入力に立案→承認→適用→検証→再レビュー）。
 
 ## 注意・限界
