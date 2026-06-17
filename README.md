@@ -25,12 +25,14 @@ cadence/
     ├── SKILL.md                   # エンジン（メイン Opus への実行手順）
     ├── flows/
     │   ├── audit-reliability.md   # フロー定義（SRE read-only 信頼性監査）
+    │   ├── error-analysis.md      # フロー定義（read-only RCA：原因候補→証拠で確認/反証→収束）
     │   └── fix-reliability.md     # フロー定義（mode: edit・有人承認で issue を修正）
     └── references/
         ├── gates.md               # 決定論ゲート（Bash の exit code で機械判定）
         └── personas/
             ├── planner.md         # スコープ設計
             ├── sre-reviewer.md    # 信頼性監査（read-only）
+            ├── rca-analyst.md     # 根本原因分析（read-only・複数仮説/証拠主義/反アンカリング）
             ├── sre-fixer.md       # 信頼性修正（mode: edit・最小/可逆/承認制）
             └── supervisor.md      # 収束判定（COMPLETE/review/ABORT）
 ```
@@ -42,7 +44,8 @@ cadence/
 
 # 実行（例）
 /cadence audit-reliability ./infra            # infra ディレクトリを read-only 監査
-/cadence fix-reliability <audit のレポート or issue>   # mode: edit で修正（適用前に人が承認）
+/cadence error-analysis <症状/ログ/対象パス>   # read-only で根本原因分析（RCA）
+/cadence fix-reliability <audit/RCA のレポート or issue>   # mode: edit で修正（適用前に人が承認）
 ```
 - フローの `audit` step の `mcp: infra` を自分の MCP サーバ（参照系）に合わせる。
 - 新しい監査・調査タイプは `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。
