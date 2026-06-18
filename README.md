@@ -57,6 +57,18 @@ cadence/
 - 新しい監査・調査タイプは `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。
 - 検証が定着したら `gates:` に決定論チェック（Bash）を足す。
 
+### 別PCでのセットアップ
+各マシンで **clone → `./install.sh`** を回す。これだけで `~/.claude` への配置が済む。
+```bash
+git clone https://github.com/jeeee-org/cadence.git
+cd cadence
+./install.sh
+# Claude Code を再起動 or /reload-skills
+```
+- **更新を取り込む時も同じ**：`git pull` の後に `./install.sh` を再実行する（install.sh は配置先を `rm -rf` して入れ直す）。
+- **改善メモ（`IMPROVEMENTS.md`）はマシンごとに symlink を張り直す**：正本はリポ root の `IMPROVEMENTS.md`（git 管理）で、install.sh が `~/.claude/skills/cadence/IMPROVEMENTS.md` をそのマシンのリポパスへの symlink にする。だから実行時の追記は git 管理下の正本へ書き込まれ、再インストールの `rm -rf` でも消えない。symlink 自体はリポの絶対パスを指すマシン固有のものなので、**コミットには含まれず、各PCで install.sh が張り直す**。
+- 溜まった改善メモは普通に `git add IMPROVEMENTS.md && git commit && git push` で共有し、他PCは `git pull` で受け取る。
+
 ## コアの考え方
 - **read-only 既定**：監査は指摘・リスク・修正案を出すだけ。何も変更しない。
 - **収束監視**：`max_cycles` で supervise↔review を打ち切り、改善が止まれば**部分結果で ABORT**（無限ループにしない）。
