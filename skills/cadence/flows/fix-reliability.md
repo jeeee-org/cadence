@@ -81,8 +81,9 @@ require_human_approval: true   # 変更適用の前(propose)と COMPLETE の前(
   - 収束しない → `ABORT`
 
 ## convergence
-`implement ↔ verify ↔ review` を `max_cycles`(=3) まで。収束しない（直すたび別の問題が出る等）なら
-**ABORT し、適用済みの変更とロールバック手順を明記**して人に返す。
+`max_cycles`(=3) は `implement ↔ verify ↔ review` の**ハードキャップ**：state.md のサイクル数が上限に
+達したら必ず停止し、**ABORT として適用済みの変更とロールバック手順を明記**して人に返す。上限前でも
+同じゲート失敗・同じ指摘の繰り返し（直すたび別の問題が出る等）は停滞として早期 `ABORT`。
 
 ## gates（決定論・verify で使用）
 ```yaml

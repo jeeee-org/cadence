@@ -71,7 +71,7 @@ cd cadence
 
 ## コアの考え方
 - **read-only 既定**：監査は指摘・リスク・修正案を出すだけ。何も変更しない。
-- **収束監視**：`max_cycles` で supervise↔review を打ち切り、改善が止まれば**部分結果で ABORT**（無限ループにしない）。
+- **収束監視**：`max_cycles` は**ハードキャップ**（到達で必ず停止。「改善中だから延長」はしない）。上限前でも finding ID 集合に差分が無ければ停滞として**部分結果で ABORT**。ラン状態は `.cadence/runs/<id>/state.md` が正（再開可能）。
 - **決定論ゲート**：モデルのブレは LLM 判定でなく**コマンドの exit code**で弾く（[references/gates.md](skills/cadence/references/gates.md)）。
 - **高ステークス判断は quorum 外注**：確信が要る step だけ多モデル合議に回す（コスト N 倍なのでここぞに限定）。
 
