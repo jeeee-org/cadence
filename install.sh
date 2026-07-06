@@ -31,6 +31,23 @@ ln -sfn "$SRC_DIR/IMPROVEMENTS.md" "$CLAUDE_CONFIG_DIR/skills/cadence/IMPROVEMEN
 # スラッシュコマンドをコピー
 cp "$SRC_DIR"/commands/*.md "$CLAUDE_CONFIG_DIR/commands/"
 
+# グローバル CLAUDE.md に cadence トリアージのブロックを注入する
+# （正本は rules/cadence-triage.md。マーカー間を置換、無ければ末尾に追記。quorum-triage と同方式）
+RULES_FILE="$SRC_DIR/rules/cadence-triage.md"
+TARGET_MD="$CLAUDE_CONFIG_DIR/CLAUDE.md"
+if [ -f "$RULES_FILE" ]; then
+  if [ -f "$TARGET_MD" ] && grep -q 'cadence-triage:begin' "$TARGET_MD"; then
+    awk -v rules="$RULES_FILE" '
+      /cadence-triage:begin/ {skip=1; while ((getline line < rules) > 0) print line; close(rules); next}
+      /cadence-triage:end/   {skip=0; next}
+      !skip {print}
+    ' "$TARGET_MD" > "$TARGET_MD.tmp" && mv "$TARGET_MD.tmp" "$TARGET_MD"
+  else
+    { [ -s "$TARGET_MD" ] && echo ""; cat "$RULES_FILE"; } >> "$TARGET_MD"
+  fi
+  echo "  - CLAUDE.md に cadence-triage ブロックを反映"
+fi
+
 echo "✓ インストール完了: $CLAUDE_CONFIG_DIR"
 echo "  - skills/cadence"
 echo "  - skills/cadence/IMPROVEMENTS.md -> $SRC_DIR/IMPROVEMENTS.md (symlink)"
