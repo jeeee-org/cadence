@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-svc
+  namespace: payments
+  labels:
+    app: api-svc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api-svc
+  template:
+    metadata:
+      labels:
+        app: api-svc
+    spec:
+      containers:
+        - name: api
+          image: registry.internal/payments/api:v2.3.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

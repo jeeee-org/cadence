@@ -1,0 +1,38 @@
+# Alerting rules for the payments platform (Prometheus-style)
+groups:
+  - name: api
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_errors_total{service="api"}[5m]) / rate(http_requests_total{service="api"}[5m]) > 0.9
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: "api error rate is high"
+
+      - alert: ApiLatencyP99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service="api"}[5m])) > 1.5
+        for: 10m
+        labels:
+          severity: page
+          runbook_url: https://runbooks.internal/api-latency
+        annotations:
+          summary: "api p99 latency above SLO"
+
+  - name: node
+    rules:
+      - alert: DiskPressure
+        expr: node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.10
+        for: 15m
+        labels:
+          severity: ticket
+          runbook_url: https://runbooks.internal/disk-pressure
+        annotations:
+          summary: "node disk nearly full"
+
+# SLOs
+slos:
+  - service: api
+    objective: 99.9
+    window: 30d
+    indicator: availability

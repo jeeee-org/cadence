@@ -1,0 +1,13 @@
+{
+  "source": "kubectl get resourcequota -n payments (simulated read-only MCP)",
+  "fetched_at": "2026-07-06T09:00:00+09:00",
+  "namespace": "payments",
+  "quota": {
+    "memory_limit": "8Gi",
+    "memory_used": "7.4Gi",
+    "memory_used_pct": 92,
+    "cpu_limit": "8",
+    "cpu_used": "3.1",
+    "cpu_used_pct": 39
+  }
+}

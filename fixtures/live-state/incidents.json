@@ -1,0 +1,20 @@
+{
+  "source": "incident tracker (simulated read-only MCP)",
+  "fetched_at": "2026-07-06T09:00:00+09:00",
+  "recent_incidents": [
+    {
+      "id": "INC-0042",
+      "date": "2026-06-15",
+      "severity": "P1",
+      "title": "payment checkout failures for 47 minutes",
+      "notes": "on-call followed payment-outage runbook; step 'scale deployment/payments-v1' failed with NotFound. Lost ~20 minutes identifying the actual deployment name. Mitigated by manual restart."
+    },
+    {
+      "id": "INC-0051",
+      "date": "2026-06-30",
+      "severity": "P3",
+      "title": "api p99 latency degradation, self-recovered",
+      "notes": "correlated with payment-svc pod restart; api clients retried aggressively during the window."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "source": "kubectl get deployments -n payments (simulated read-only MCP)",
+  "fetched_at": "2026-07-06T09:00:00+09:00",
+  "namespace": "payments",
+  "deployments": [
+    {
+      "name": "payment-svc",
+      "replicas_desired": 1,
+      "replicas_available": 1,
+      "image": "registry.internal/payments/payment:latest",
+      "last_rollout": "2026-06-28T14:12:00+09:00"
+    },
+    {
+      "name": "api-svc",
+      "replicas_desired": 3,
+      "replicas_available": 3,
+      "image": "registry.internal/payments/api:v2.3.1",
+      "last_rollout": "2026-07-01T10:03:00+09:00"
+    }
+  ],
+  "note": "no deployment named 'payments-v1' exists in this namespace"
+}

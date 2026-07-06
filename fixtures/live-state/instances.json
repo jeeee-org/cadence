@@ -1,0 +1,26 @@
+{
+  "source": "internal CMDB / cloud inventory (simulated read-only MCP)",
+  "fetched_at": "2026-07-06T09:00:00+09:00",
+  "database_hosts": [
+    {
+      "hostname": "db-primary-01",
+      "role": "primary",
+      "engine": "postgres 15.4",
+      "status": "running"
+    },
+    {
+      "hostname": "db-standby-02",
+      "role": "standby",
+      "engine": "postgres 15.4",
+      "status": "running",
+      "provisioned": "2025-03-11"
+    }
+  ],
+  "decommissioned": [
+    {
+      "hostname": "db-standby-01",
+      "decommissioned_at": "2025-02-20",
+      "reason": "hardware refresh; replaced by db-standby-02"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "source": "alertmanager / rules API (simulated read-only MCP)",
+  "fetched_at": "2026-07-06T09:00:00+09:00",
+  "rules": [
+    { "alert": "HighErrorRate", "state": "enabled", "service": "api" },
+    { "alert": "ApiLatencyP99", "state": "enabled", "service": "api" },
+    {
+      "alert": "DiskPressure",
+      "state": "disabled",
+      "service": "node",
+      "disabled_by": "ops-tmp-silence",
+      "disabled_since": "2026-04-02",
+      "note": "temporarily disabled during storage migration; never re-enabled"
+    }
+  ],
+  "services_with_no_rules": ["payment-svc"]
+}

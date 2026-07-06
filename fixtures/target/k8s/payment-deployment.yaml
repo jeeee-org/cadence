@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-svc
+  namespace: payments
+  labels:
+    app: payment-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-svc
+  template:
+    metadata:
+      labels:
+        app: payment-svc
+    spec:
+      containers:
+        - name: payment
+          image: registry.internal/payments/payment:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: db.payments.internal

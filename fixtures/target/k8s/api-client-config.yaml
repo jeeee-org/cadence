@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-client-config
+  namespace: payments
+data:
+  # HTTP client settings for api-svc -> payment-svc calls
+  client.yaml: |
+    upstream: payment-svc.payments.svc.cluster.local:8080
+    timeout_ms: 2000
+    retries: 10
+    backoff: none
