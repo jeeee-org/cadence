@@ -37,6 +37,7 @@ cadence/
     └── references/
         ├── gates.md               # 決定論ゲート（Bash の exit code で機械判定）
         ├── report-template.md     # finding／最終レポートの様式（issue-ready の定義の正本）
+        ├── flow-authoring.md      # ドメインフローの作り方（PJ の蓄積知識をフローに蒸留する手順）
         └── personas/
             ├── planner.md         # スコープ設計
             ├── sre-reviewer.md    # 信頼性監査（read-only）
@@ -62,6 +63,21 @@ cadence/
 - フローの `audit` step の `mcp: infra` を自分の MCP サーバ（参照系）に合わせる。
 - 新しい監査・調査タイプは `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。
 - 検証が定着したら `gates:` に決定論チェック（Bash）を足す。
+
+### ドメインフローは各PJ側に置く（推奨構成）
+
+cadence の強さの源泉は実行エンジンではなく、**フローに書かれたドメイン知識**（経験由来の観点リスト・
+品質基準・そのPJで踏んだ失敗モード）にある。そこで：
+
+- **cadence（このリポ・public）＝共通エンジン＋規約＋汎用フロー**。全PCに clone → install。
+- **ドメインフロー＝各PJの `<PJ>/.claude/cadence/flows/`（＋`personas/`）**。PJ のリポでコミットし、
+  PJ と一緒に各PCへ移動する。業務の知識・固有名詞はPJ側に閉じる（public の cadence に持ち込まない）。
+- エンジンはフロー/ペルソナを〔PJ ローカル → 同梱〕の順で解決する（同名は PJ 側が勝つ）。
+- 既存PJの `NOTES.md`・checkpoints に溜まった知見をフローへ**蒸留する手順**は
+  [flow-authoring.md](skills/cadence/references/flow-authoring.md)。PJ側フローの機械検証は：
+  ```bash
+  python3 <cadenceリポ>/scripts/validate-flows.py --project-dir <PJルート>
+  ```
 
 ### 別PCでのセットアップ
 各マシンで **clone → `./install.sh`** を回す。これだけで `~/.claude` への配置が済む。

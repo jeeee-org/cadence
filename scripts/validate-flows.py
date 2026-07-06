@@ -16,6 +16,8 @@ cadence 自身の思想（LLM 判定でなく exit code で機械判定）を自
 
 使い方:
   scripts/validate-flows.py [--skill-dir skills/cadence]
+  scripts/validate-flows.py --project-dir <PJルート>   # <PJ>/.claude/cadence/flows/ を検証
+                                                       # （persona は PJ→同梱の順で解決）
 exit code: 0=全フロー合格 / 1=違反あり
 """
 import argparse
@@ -46,7 +48,7 @@ def parse_flow(text: str):
     return front, steps
 
 
-def validate(flow_path: Path, personas_dir: Path):
+def validate(flow_path: Path, personas_dirs: list):
     errors = []
     text = flow_path.read_text(encoding="utf-8")
     front, steps = parse_flow(text)
@@ -77,8 +79,9 @@ def validate(flow_path: Path, personas_dir: Path):
         pm = re.search(r"\*\*persona\*\*:\s*(\S+)", body)
         if not pm:
             errors.append(f"step {name}: persona が無い")
-        elif not (personas_dir / f"{pm.group(1)}.md").exists():
-            errors.append(f"step {name}: persona '{pm.group(1)}' が {personas_dir} に無い")
+        elif not any((d / f"{pm.group(1)}.md").exists() for d in personas_dirs):
+            dirs = " / ".join(str(d) for d in personas_dirs)
+            errors.append(f"step {name}: persona '{pm.group(1)}' が {dirs} のいずれにも無い")
 
         # 3. 遷移先の実在 / 5. next の存在
         targets = re.findall(r"→\s*`([^`]+)`", body)
@@ -122,10 +125,21 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     default_skill = Path(__file__).resolve().parent.parent / "skills" / "cadence"
     ap.add_argument("--skill-dir", type=Path, default=default_skill)
+    ap.add_argument("--project-dir", type=Path, default=None,
+                    help="PJルート。<PJ>/.claude/cadence/flows/ を検証（persona は PJ→同梱の順で解決）")
     args = ap.parse_args()
 
-    flows_dir = args.skill_dir / "flows"
-    personas_dir = args.skill_dir / "references" / "personas"
+    # persona の解決順：PJローカル →（このリポの）同梱 → インストール済みグローバル
+    personas_dirs = [
+        args.skill_dir / "references" / "personas",
+        Path.home() / ".claude" / "skills" / "cadence" / "references" / "personas",
+    ]
+    if args.project_dir:
+        flows_dir = args.project_dir / ".claude" / "cadence" / "flows"
+        personas_dirs.insert(0, args.project_dir / ".claude" / "cadence" / "personas")
+    else:
+        flows_dir = args.skill_dir / "flows"
+
     flows = sorted(flows_dir.glob("*.md"))
     if not flows:
         print(f"NG: フローが見つからない: {flows_dir}", file=sys.stderr)
@@ -133,7 +147,7 @@ def main():
 
     failed = False
     for f in flows:
-        errs = validate(f, personas_dir)
+        errs = validate(f, personas_dirs)
         if errs:
             failed = True
             print(f"NG {f.name}")
