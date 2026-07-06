@@ -8,6 +8,16 @@ set -euo pipefail
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 
+# フロー定義を機械検証してから配置する（壊れたフローを実行時に持ち込まない）
+if command -v python3 >/dev/null 2>&1; then
+  python3 "$SRC_DIR/scripts/validate-flows.py" || {
+    echo "✗ フロー定義の検証に失敗。修正してから再実行してください。" >&2
+    exit 1
+  }
+else
+  echo "⚠ python3 が無いためフロー検証をスキップ（scripts/validate-flows.py）" >&2
+fi
+
 mkdir -p "$CLAUDE_CONFIG_DIR/skills" "$CLAUDE_CONFIG_DIR/commands"
 
 # スキル本体をコピー
