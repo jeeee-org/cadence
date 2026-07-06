@@ -37,3 +37,9 @@ echo "  - skills/cadence/IMPROVEMENTS.md -> $SRC_DIR/IMPROVEMENTS.md (symlink)"
 echo "  - commands/cadence.md"
 echo ""
 echo "Claude Code を再起動するか /reload-skills を実行してください。"
+echo ""
+echo "（opt-in）read-only をハーネス側で強制するには ~/.claude/settings.json の hooks に追記:"
+echo '  {"hooks": {"PreToolUse": [{"matcher": "Edit|Write|NotebookEdit",'
+echo '    "hooks": [{"type": "command",'
+echo "      \"command\": \"python3 $CLAUDE_CONFIG_DIR/skills/cadence/hooks/readonly-guard.py\"}]}]}}"
+echo "  詳細: skills/cadence/hooks/readonly-guard.py 冒頭コメント"

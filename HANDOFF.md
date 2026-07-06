@@ -32,7 +32,10 @@ cd cadence
   1. 繋ぐ MCP は**参照系のみ**。書き込み系ツールを持つ MCP はそもそも繋がない。
   2. MCP/CLI の**資格情報を read-only に絞る**（参照のみの k8s ServiceAccount、read 権限だけの IAM 等）。万一の書き込み試行を権限側で弾く。
   3. 可能なら本番に書き込めない環境/ネットワークで回す。
-  - メイン Opus は Edit/Write を持つため、「書くな」という指示は補助層にすぎない。上の 1〜3 を先に固めること。
+  - メインセッションは Edit/Write を持つため、「書くな」という指示は補助層にすぎない。上の 1〜3 を先に固めること。
+  4. （opt-in）**ローカルファイルへの書き込みは readonly-guard hook で deny** できる。install.sh が
+     表示する設定を `~/.claude/settings.json` に追記すると、ラン中（`./.cadence/readonly` 存在中）の
+     Edit/Write/NotebookEdit がハーネス側でブロックされる（`skills/cadence/hooks/readonly-guard.py`）。
 
 ## 3. 実走
 ```bash

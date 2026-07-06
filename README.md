@@ -83,6 +83,6 @@ cd cadence
   引き継ぎ手順は [HANDOFF.md](HANDOFF.md)（§4 のチェックリストに済/未を反映済み）。
 
 ## 注意・限界
-- **read-only は指示遵守だけでは弱い**（メインは Edit/Write を持つ）。**MCP/権限で物理的に固める**のが本筋：参照系 MCP のみ接続／資格情報を read-only に絞る／触れない環境で回す（詳細は [SKILL.md「read-only の担保方針」](skills/cadence/SKILL.md) と [HANDOFF.md](HANDOFF.md) §2）。
+- **read-only は指示遵守だけでは弱い**（メインは Edit/Write を持つ）。**MCP/権限で物理的に固める**のが本筋：参照系 MCP のみ接続／資格情報を read-only に絞る／触れない環境で回す。さらに**ローカルファイルは readonly-guard hook（opt-in）でハーネス側から deny** できる——ラン中のセンチネル `./.cadence/readonly` 存在中は Edit/Write をブロック（詳細は [SKILL.md「read-only の担保方針」](skills/cadence/SKILL.md) と `skills/cadence/hooks/readonly-guard.py`）。
 - ペルソナ/フローはテキスト指示であり実行系の強制ではない。step ごとに自己点検する。
 - cadence は MCP を自前で起動しない。**ホスト Claude Code の MCP 設定**を使い、フローの `mcp:` はラベル（[HANDOFF.md](HANDOFF.md) §2）。
