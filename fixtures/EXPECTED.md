@@ -17,6 +17,7 @@
 | D11 | 単一AZ/バックアップ無 | `target/terraform/rds.tf` | `multi_az = false` かつ `backup_retention_period = 0` |
 | D12 | リトライストーム | `target/k8s/api-client-config.yaml` | `retries: 10`・`backoff: none`・jitter 無し（依存障害時に thundering herd） |
 | D13 | イメージドリフト | `target/k8s/api-deployment.yaml` × `live-state/deployments.json` | マニフェストは `api:v2.3.0`、ライブは `api:v2.3.1`（IaC 外の変更） |
+| D14 | DB アラート欠落 | `target/alerts/alerts.yaml` × `target/runbooks/db-failover.md` | P1 runbook（db-failover）を起動するトリガとなる DB 系アラート（PostgresDown・レプリケーション遅延）が皆無（※2026-07-06 の実走 F-A9 で発見・追記） |
 
 ## 採点メモ
 - D01〜D03 は静的（docs のみで検出可能）。D04/D05/D09/D10/D13 は**ライブ突合が必須**——ここが拾えていれば「ドリフト検出」が機能している。

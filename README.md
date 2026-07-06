@@ -76,9 +76,11 @@ cd cadence
 - **高ステークス判断は quorum 外注**：確信が要る step だけ多モデル合議に回す（コスト N 倍なのでここぞに限定）。
 
 ## 状態 / 引き継ぎ
-- **v0 雛形**。構造は一通り完成、`~/.claude` 配置・スキル登録まで確認済み。**実走検証は未**。
-- 実走には **infra MCP がつながった PC** が要る。その引き継ぎ手順は [HANDOFF.md](HANDOFF.md)
-  （インストール・MCP 接続・実走・検証チェックリスト・push 認証の注意）。
+- **v0.1**。構造完成＋**合成フィクスチャで実走検証済み**（2026-07-06、`fixtures/` 参照：仕込んだ欠陥
+  13/13 検出・偽陽性 0・擬似ライブとのドリフト検出も全件機能）。`/cadence audit-reliability fixtures/target`
+  で誰でも再検証できる（infra MCP 不要）。
+- 残検証：**実 infra MCP を繋いだ実走**・supervise↔review ループの発火・gates/quorum の実地。
+  引き継ぎ手順は [HANDOFF.md](HANDOFF.md)（§4 のチェックリストに済/未を反映済み）。
 
 ## 注意・限界
 - **read-only は指示遵守だけでは弱い**（メインは Edit/Write を持つ）。**MCP/権限で物理的に固める**のが本筋：参照系 MCP のみ接続／資格情報を read-only に絞る／触れない環境で回す（詳細は [SKILL.md「read-only の担保方針」](skills/cadence/SKILL.md) と [HANDOFF.md](HANDOFF.md) §2）。

@@ -42,10 +42,16 @@ cd cadence
   最後に issue-ready な総合レポート（場所／故障シナリオ／影響範囲／修正案）が出る。
 
 ## 4. 検証チェックリスト（v0 で見たいこと）
-- [ ] フロー定義とペルソナを正しく読み込み、ステートマシン通り遷移するか
-- [ ] **read-only が守られるか**（Edit/Write/破壊的コマンドを使っていないか）
-- [ ] MCP のライブ状態と runbook/IaC の**ドリフト検出**が機能するか
-- [ ] supervise↔review の**収束監視**が効くか（`max_cycles` で止まる／ABORT 時に部分結果を出す）
+
+**2026-07-06 に `fixtures/`（合成フィクスチャ＋擬似ライブ状態）で実走検証済み**。infra MCP なしで
+検証できる項目は潰した。結果の詳細は当日の `.cadence/runs/2026-07-06-fixture-01/`（05-scoring 参照。
+仕込んだ欠陥 13/13 検出・偽陽性 0・ドリフト系全件検出）。
+
+- [x] フロー定義とペルソナを正しく読み込み、ステートマシン通り遷移するか（plan→audit(並列2)→supervise→COMPLETE→fuse を確認）
+- [x] **read-only が守られるか**（サブエージェント含め Edit/Write 不使用。`git status` で fixtures 無変更を機械確認）
+- [x] ライブ状態と runbook/IaC の**ドリフト検出**が機能するか（擬似ライブ JSON で7件検出。**実 MCP での検証は未**）
+- [ ] supervise↔review の**収束監視**（部分的：supervise の判定は機能したが cycle 1 で COMPLETE したため review ループと ABORT は未発火。発火させるには意図的に不完全な監査を返す adversarial フィクスチャが要る→ IMPROVEMENTS.md）
+- [ ] 実 infra MCP を繋いだ実走（このチェックだけ MCP 接続済み PC が必要）
 - [ ] （任意）`gates` に決定論チェックを足したら exit code で分岐するか（`references/gates.md`）
 - [ ] （任意）supervise で **quorum 外注**を試したら合議が噛み合うか
 
