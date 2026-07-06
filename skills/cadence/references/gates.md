@@ -18,7 +18,7 @@ gates:
     on_fail: review              # 非ゼロ時の遷移先（既定 review）。COMPLETE/ABORT も可
 ```
 
-## 実行規約（メイン Opus）
+## 実行規約（メインセッション＝エンジン）
 1. `command` を Bash で実行する。**参照・検査系のみ**（環境を変更しない）。`timeout_sec` があれば `timeout` で打ち切る。
 2. **exit code で判定**：0＝合格、非ゼロ＝不合格。出力（stdout/stderr）はゲート結果として `NN-gate-<name>.md` に残す。
 3. 不合格なら `on_fail` の step へ遷移（多くは `review`）。複数ゲートは**全て合格**で先へ。
