@@ -6,6 +6,9 @@
 # cadence のラン成果物（監査証跡。各リポ側で生成される）
 .cadence/
 
+# マシンローカルの Claude 指示（各PCで作る。コミットしない）
+CLAUDE.local.md
+
 # OS / エディタ
 .DS_Store
 *.swp
