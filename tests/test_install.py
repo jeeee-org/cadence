@@ -25,8 +25,9 @@ class InstallTest(unittest.TestCase):
                 "CLAUDE_CONFIG_DIR": str(claude_home),
                 "CODEX_HOME": str(codex_home),
             })
+            result = None
             for _ in range(2):
-                subprocess.run(
+                result = subprocess.run(
                     ["bash", str(ROOT / "install.sh")],
                     cwd=ROOT,
                     env=env,
@@ -34,6 +35,11 @@ class InstallTest(unittest.TestCase):
                     capture_output=True,
                     text=True,
                 )
+
+            self.assertIsNotNone(result)
+            self.assertIn("/hooks", result.stdout)
+            self.assertIn("review/trust", result.stdout)
+            self.assertIn("trusted/enabled", result.stdout)
 
             claude_skill = claude_home / "skills" / "cadence"
             codex_skill = codex_home / "skills" / "cadence"

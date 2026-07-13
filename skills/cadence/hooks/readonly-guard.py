@@ -7,8 +7,9 @@ read-only フローのラン中だけ Edit/Write/NotebookEdit/apply_patch を拒
 仕組み:
   - エンジンは read-only フローのラン開始時に <target-repo>/.cadence/readonly
     （センチネルファイル）を作り、ラン終了（COMPLETE/ABORT）時に消す。
-  - このフックはセンチネルが存在する間だけ発動し、.cadence/ 配下（ラン成果物）
-    以外への Edit/Write/NotebookEdit/apply_patch を deny する。
+  - このフックはセンチネルが存在する間だけ発動し、.cadence/runs/ 配下（ラン成果物）
+    以外への Edit/Write/NotebookEdit/apply_patch を deny する。センチネル自身も編集不可。
+  - センチネルの削除は COMPLETE/ABORT 確定後、hook matcher 外のエンジン制御処理で行う。
   - センチネルが無ければ何もしない（通常作業に影響ゼロ）。
 
 導入（opt-in）: ~/.claude/settings.json の hooks に追記
@@ -18,6 +19,8 @@ read-only フローのラン中だけ Edit/Write/NotebookEdit/apply_patch を拒
 
 Codex: ~/.codex/hooks.json の PreToolUse に matcher "apply_patch|Edit|Write" で登録し、
   command を "python3 ~/.codex/skills/cadence/hooks/readonly-guard.py" にする。
+  Codex再起動後に /hooks で定義をreview/trustし、trusted/enabledを確認する。
+  command定義を変更した場合は再度review/trustする。
 
 注意: Codex hookは一部shell実行を完全には捕捉しない。参照専用MCP・read-only資格情報・
 書込み不能環境を第一境界とし、このhookだけを物理境界とみなさない。
@@ -61,12 +64,18 @@ def extract_target_paths(data):
     return targets
 
 
-def is_run_artifact(run_root: Path, raw_target: str):
+def is_run_artifact(run_root: Path, cwd: Path, raw_target: str):
+    """targetの実書込み先がrun_root内の.cadence/runs/配下ならTrue。"""
     target = Path(raw_target)
     if not target.is_absolute():
-        target = run_root / target
+        target = cwd / target
     try:
-        target.resolve().relative_to((run_root / ".cadence").resolve())
+        resolved_run_root = run_root.resolve()
+        expected_artifacts_root = resolved_run_root / ".cadence" / "runs"
+        artifacts_root = expected_artifacts_root.resolve()
+        if artifacts_root != expected_artifacts_root:
+            return False  # .cadence または runs 自体がsymlinkならfail closed
+        target.resolve().relative_to(artifacts_root)
         return True
     except (OSError, ValueError):
         return False
@@ -84,8 +93,8 @@ def main():
         return 0  # ラン中でなければ何もしない
 
     targets = extract_target_paths(data)
-    if targets and all(is_run_artifact(run_root, target) for target in targets):
-        return 0  # ラン成果物（.cadence/ 配下）だけへの書き込みは許可
+    if targets and all(is_run_artifact(run_root, cwd, target) for target in targets):
+        return 0  # ラン成果物（.cadence/runs/ 配下）だけへの書き込みは許可
 
     print(json.dumps({
         "hookSpecificOutput": {
@@ -93,9 +102,10 @@ def main():
             "permissionDecision": "deny",
             "permissionDecisionReason": (
                 "cadence の read-only ランが進行中です（.cadence/readonly が存在）。"
-                ".cadence/ 配下（ラン成果物）以外への Edit/Write/NotebookEdit/apply_patch はブロックされます。"
+                ".cadence/runs/ 配下（ラン成果物）以外への Edit/Write/NotebookEdit/apply_patch はブロックされます。"
+                "センチネル自身の変更も許可されません。"
                 "指摘・リスク・修正案はレポートに書いてください。ランが終了しているのに"
-                "このメッセージが出る場合は .cadence/readonly を削除してください。"
+                "このメッセージが出る場合は、終了状態を確認してからshellで .cadence/readonly を削除してください。"
             ),
         }
     }))

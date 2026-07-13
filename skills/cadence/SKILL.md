@@ -33,7 +33,7 @@ TAKT の思想（AI の自律に委ねず外側から構造で律する）を Cl
 ### 1. ランの作業領域を用意（成果物の追跡可能性）
 - `./.cadence/runs/<run-id>/` を作る（`<run-id>` は短い識別子。日付＋連番など）。各 step の出力を `NN-<step>.md` として残す（TAKT の `.takt/runs/` に相当する監査証跡）。並列 step の出力は `NN-<step>-<agent>.md`（例 `02-audit-A.md`）。
 - `.cadence/` は対象リポの `.gitignore` に入れておくとよい（成果物であって追跡対象ではない）。
-- **read-only フローなら `./.cadence/readonly`（センチネルファイル）を作る**。readonly-guard hook（下の「read-only の担保方針」④）を導入済みの環境では、これで Edit/Write がハーネス側でブロックされる。**ラン終了時（COMPLETE/ABORT とも）に必ず削除する**。hook 未導入でも作って害はない（単に無視される）。
+- **read-only フローならエンジンのshell制御操作で `./.cadence/readonly`（センチネルファイル）を作る**。readonly-guard hook（下の「read-only の担保方針」④）を導入済みの環境では、これで Edit/Write がハーネス側でブロックされる。センチネル自身はEdit/Write/apply_patchで変更しない。**ラン終了時（COMPLETE/ABORT とも）、最終成果物とstate確定後にshell制御操作で必ず削除する**。hook 未導入でも作って害はない（単に無視される）。
 
 ### 2. ステートマシンを回す
 `initial` step から開始し、各 step を以下の規約で実行して遷移する：
@@ -67,7 +67,7 @@ TAKT の思想（AI の自律に委ねず外側から構造で律する）を Cl
 - 全 step の結論を統合し、**issue-ready な最終レポート**を出す。finding とレポートの様式は
   `references/report-template.md` が正：各 finding に〔安定 ID〕〔場所(file:line / どの MCP 取得)〕〔故障シナリオ：トリガ＋制御点〕〔影響範囲(blast radius)〕〔修正案〕。
 - 末尾に**監査証跡**（state.md の遷移要約・read-only の確認方法・ABORT したなら何が未被覆か・ゲート結果）を畳んで添える。
-- **ラン終了時の後片付け**：`./.cadence/readonly` センチネルを削除する（COMPLETE/ABORT とも）。
+- **ラン終了時の後片付け**：最終成果物とstateを確定してから、エンジンのshell制御操作で `./.cadence/readonly` センチネルを削除する（COMPLETE/ABORT とも）。Edit/Write/apply_patchでは変更しない。
 
 ## read-only の担保方針（重要・多層防御）
 
@@ -82,7 +82,7 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
 4. **ローカルファイルは PreToolUse hook でブロックする**（第四の壁・opt-in）。1〜3 はライブ環境を守るが、
    対象リポのローカルファイルへの Edit/Write は守らない。`hooks/readonly-guard.py` を hook 登録すると、
    ラン中（`./.cadence/readonly` センチネル存在中）の Edit/Write/NotebookEdit を**ハーネス側で deny** する
-   （`.cadence/` 配下のラン成果物への書き込みだけ許可）。導入方法は hook ファイル冒頭のコメント参照。
+   （`.cadence/runs/` 配下のラン成果物への書き込みだけ許可し、センチネル自身は拒否）。導入方法は hook ファイル冒頭のコメント参照。
 5. **指示の遵守は最後の層**（補助）。`Edit`/`Write`/破壊的コマンドを使わないという規律は 1〜4 を補うソフト層。
    単独で頼る壁ではない。各 step でこの制約を自己点検する。
 

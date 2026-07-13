@@ -35,8 +35,10 @@ cd cadence
   - メインセッションは Edit/Write を持つため、「書くな」という指示は補助層にすぎない。上の 1〜3 を先に固めること。
   4. （opt-in）**ローカルファイルへの書き込みは readonly-guard hook で deny** できる。install.sh が
      表示する設定をClaude CodeのsettingsまたはCodexのhooksへ追記すると、ラン中（`./.cadence/readonly` 存在中）の
-     Edit/Write/NotebookEdit/apply_patchがブロックされる（`skills/cadence/hooks/readonly-guard.py`）。
-     Codexではshell書込みの全経路を遮断しないため、上の1〜3を必須とする。
+     `.cadence/runs/` 外へのEdit/Write/NotebookEditと、Codexのstructured `apply_patch`がブロックされる
+     （`skills/cadence/hooks/readonly-guard.py`）。Codexでは再起動後に **`/hooks` でcommand hookをreview/trustし、
+     trusted/enabledを確認する**。未trustの定義は実行されず、command定義の変更後は再度review/trustが必要。
+     shell書込みの全経路は遮断しないため、上の1〜3を必須とする。
 
 ## 3. 実走
 ```bash
@@ -56,6 +58,7 @@ cd cadence
 - [x] **read-only が守られるか**（サブエージェント含め Edit/Write 不使用。`git status` で fixtures 無変更を機械確認）
 - [x] ライブ状態と runbook/IaC の**ドリフト検出**が機能するか（擬似ライブ JSON で7件検出。**実 MCP での検証は未**）
 - [x] Codex版がplan→並列audit→supervise→COMPLETEを完走し、全13資料・17 findings・非`.cadence`のSHA-256不変を確認（2026-07-13）
+- [ ] Codexのreadonly hookを`/hooks`でtrusted/enabledにし、一時リポで`.cadence/runs/`外へのstructured `apply_patch`がdenyされることを確認
 - [ ] runbook↔alert対応表の改善後forward-test（実行時のモデル容量不足で未完。決定論契約テストは追加済み）
 - [ ] supervise↔review の**収束監視**（部分的：supervise の判定は機能したが cycle 1 で COMPLETE したため review ループと ABORT は未発火。発火させるには意図的に不完全な監査を返す adversarial フィクスチャが要る→ IMPROVEMENTS.md）
 - [ ] 実 infra MCP を繋いだ実走（このチェックだけ MCP 接続済み PC が必要）
