@@ -31,7 +31,7 @@ issue-ready の定義を一箇所に固める。各フローの instruction・su
 
 ## 監査証跡
 - フロー遷移（state.md の要約：どの step を何サイクル・各 supervise の判定）
-- read-only の確認方法（git status / hook）
+- read-only の確認方法（git status / hook）。stateの `readonly_hook_status` と `readonly_hook_deny` を転記し、未確認を有効扱いしない
 - ライブ突合に使ったソース一覧
 - 未被覆（既知ギャップ）と ABORT の場合はその理由
 ```

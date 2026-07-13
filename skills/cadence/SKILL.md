@@ -44,7 +44,7 @@ TAKT の思想（AI の自律に委ねず外側から構造で律する）を Cl
 - **並列 step（`parallel: N`）**：対象が多い時は `Task` で**最大 N 個のサブエージェント**を起動し、スコープを分割して並列監査させる（TAKT の team_leader 相当）。各サブエージェントにも read-only と出力フォーマットを明示する。
 - **ライブ状態（`mcp: <server>`）**：step が MCP 指定を持つなら、その MCP ツールでライブ状態を取得し、ドキュメント（runbook/IaC）と**突き合わせてドリフトを検出**する。MCP は**参照系のみ**使う（ライブ環境を変更しない）。
 - 各 step の結論を `NN-<step>.md` に書き、次 step に必要な要約だけを渡す（コンテキスト肥大を避ける）。
-- **ラン状態を `state.md` に記録する**：`.cadence/runs/<run-id>/state.md` に〔現在 step／サイクル数（supervise 通過回数）／遷移履歴（step→step と判定理由の1行）／ゲート結果〕を**遷移のたびに追記更新**する。エンジンの記憶でなくこのファイルが正——コンテキストが要約・圧縮されても state.md を読み直せばランを正確に再開できる。
+- **ラン状態を `state.md` に記録する**：`.cadence/runs/<run-id>/state.md` に〔現在 step／サイクル数（supervise 通過回数）／遷移履歴（step→step と判定理由の1行）／ゲート結果〕を**遷移のたびに追記更新**する。read-onlyでは `readonly_hook_status: verified | not-verified | unavailable` と `readonly_hook_deny: observed | not-observed | not-tested` も記録し、センチネルの存在だけでhook有効とは判定しない。Codexの`verified`は`/hooks`でtrusted/enabledを実確認した場合だけ使う。エンジンの記憶でなくこのファイルが正——コンテキストが要約・圧縮されても state.md を読み直せばランを正確に再開できる。
 - **finding には安定 ID を振る**：`<領域>-<連番>` か `<file>:<短スラッグ>`。サイクルをまたいだ同一指摘は同じ ID を使い回す。supervise の停滞判定（下記）はこの ID 集合の差分で行う。
 
 ### 3. supervise（収束判定）と遷移
@@ -83,6 +83,7 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
    対象リポのローカルファイルへの Edit/Write は守らない。`hooks/readonly-guard.py` を hook 登録すると、
    ラン中（`./.cadence/readonly` センチネル存在中）の Edit/Write/NotebookEdit を**ハーネス側で deny** する
    （`.cadence/runs/` 配下のラン成果物への書き込みだけ許可し、センチネル自身は拒否）。導入方法は hook ファイル冒頭のコメント参照。
+   guardはsession cwdの祖先を最初のGitルートまで探索するため、対象PJをsession cwdにして開始する。外部targetやouter repoのsentinelがnested Gitリポ内まで効くとはみなさない。
 5. **指示の遵守は最後の層**（補助）。`Edit`/`Write`/破壊的コマンドを使わないという規律は 1〜4 を補うソフト層。
    単独で頼る壁ではない。各 step でこの制約を自己点検する。
 

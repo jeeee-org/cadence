@@ -263,6 +263,36 @@ class ReadonlyGuardTest(unittest.TestCase):
             })
             self.assertEqual(output, "")
 
+    def test_nested_git_does_not_inherit_outer_sentinel(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = self.make_repo(temp)
+            nested_repo = repo / "vendor" / "nested"
+            nested_cwd = nested_repo / "src"
+            (nested_repo / ".git").mkdir(parents=True)
+            nested_cwd.mkdir()
+            (repo / ".cadence").mkdir()
+            (repo / ".cadence" / "readonly").touch()
+            output = run_hook({
+                "cwd": str(nested_cwd),
+                "tool_input": {"file_path": str(nested_repo / "README.md")},
+            })
+            self.assertEqual(output, "")
+
+    def test_nested_git_uses_its_own_sentinel(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = self.make_repo(temp)
+            nested_repo = repo / "vendor" / "nested"
+            nested_cwd = nested_repo / "src"
+            (nested_repo / ".git").mkdir(parents=True)
+            nested_cwd.mkdir()
+            (nested_repo / ".cadence").mkdir()
+            (nested_repo / ".cadence" / "readonly").touch()
+            output = run_hook({
+                "cwd": str(nested_cwd),
+                "tool_input": {"file_path": str(nested_repo / "README.md")},
+            })
+            self.assertIn("deny", output)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -111,12 +111,12 @@ cd cadence
 - **使い忘れはトリアージで防ぐ**：Claude Codeはグローバル `CLAUDE.md` から提案し、Codexは `claude-rules` の `CADENCE` 分類を `$cadence` へ接続する。分類基準はcadence側で複製しない。
 
 ## 状態 / 引き継ぎ
-- **v0.3**。Claude Code / Codex両ホスト対応＋**合成フィクスチャで実走検証済み**。Codex版は全13資料を被覆して17件をissue-ready化し、非`.cadence`ファイルのSHA-256不変も確認した。初回実走で判明した領域横断の見逃しは、runbook↔alert対応表をplan/audit/superviseへ追加して決定論テストで固定した。`/cadence audit-reliability fixtures/target` または `$cadence` で再検証できる（infra MCP不要）。
-- 改善後のfresh forward-testは実行時のモデル容量不足で未完。API不要テスト23件とskill validatorは通過済み。
+- **v0.3**。Claude Code / Codex両ホスト対応＋**合成フィクスチャで実走検証済み**。Codex版は全13資料を被覆して17件をissue-ready化し、非`.cadence`ファイルのSHA-256不変も確認した（2026-07-13のcheckpoint要約のみでrun-idは未保存）。初回実走で判明した領域横断の見逃しは、runbook↔alert対応表をplan/audit/superviseへ追加して決定論テストで固定した。`/cadence audit-reliability fixtures/target` または `$cadence` で再検証できる（infra MCP不要）。
+- 改善後のfresh forward-testは未完。API不要テスト27件とskill validatorは通過済み。次回実走ではrun-idと要約証跡を保持する。
 - 残検証：**実 infra MCP を繋いだ実走**・supervise↔review ループの発火・gates/quorum の実地。
   引き継ぎ手順は [HANDOFF.md](HANDOFF.md)（§4 のチェックリストに済/未を反映済み）。
 
 ## 注意・限界
-- **read-only は指示遵守だけでは弱い**。**MCP/権限で物理的に固める**のが本筋：参照系MCPのみ接続／資格情報をread-onlyに絞る／触れない環境で回す。ローカル編集は両ホスト対応readonly-guard hook（opt-in）で補助できるが、Codexでは登録後に`/hooks`でcommand hookのreview/trustが必要。structured `apply_patch`等を対象とし、shell書込みの全経路を遮断する境界とはみなさない。
+- **read-only は指示遵守だけでは弱い**。**MCP/権限で物理的に固める**のが本筋：参照系MCPのみ接続／資格情報をread-onlyに絞る／触れない環境で回す。ローカル編集は両ホスト対応readonly-guard hook（opt-in）で補助できるが、Codexでは登録後に`/hooks`でcommand hookのreview/trustが必要。guardはsession cwdから最初のGitルートまでを対象とするため、対象リポのルートからホストを開始する。structured `apply_patch`等を対象とし、shell書込みの全経路を遮断する境界とはみなさない。
 - ペルソナ/フローはテキスト指示であり実行系の強制ではない。step ごとに自己点検する。
 - cadence は MCP を自前で起動しない。**ホストのMCP設定**を使い、フローの `mcp:` は能力ラベル（[HANDOFF.md](HANDOFF.md) §2）。

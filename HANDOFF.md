@@ -38,7 +38,9 @@ cd cadence
      `.cadence/runs/` 外へのEdit/Write/NotebookEditと、Codexのstructured `apply_patch`がブロックされる
      （`skills/cadence/hooks/readonly-guard.py`）。Codexでは再起動後に **`/hooks` でcommand hookをreview/trustし、
      trusted/enabledを確認する**。未trustの定義は実行されず、command定義の変更後は再度review/trustが必要。
-     shell書込みの全経路は遮断しないため、上の1〜3を必須とする。
+     guardはsession cwdの祖先を最初のGitルートまでしか探索しないため、対象リポへ`cd`してからホストを起動する。
+     外部targetや、outer repoのsentinelを期待したnested Gitリポ内では不発になる。nested側を対象にする場合は、
+     そのルートから開始して同リポ内にsentinelを置く。shell書込みの全経路は遮断しないため、上の1〜3を必須とする。
 
 ## 3. 実走
 ```bash
@@ -57,7 +59,7 @@ cd cadence
 - [x] フロー定義とペルソナを正しく読み込み、ステートマシン通り遷移するか（plan→audit(並列2)→supervise→COMPLETE→fuse を確認）
 - [x] **read-only が守られるか**（サブエージェント含め Edit/Write 不使用。`git status` で fixtures 無変更を機械確認）
 - [x] ライブ状態と runbook/IaC の**ドリフト検出**が機能するか（擬似ライブ JSON で7件検出。**実 MCP での検証は未**）
-- [x] Codex版がplan→並列audit→supervise→COMPLETEを完走し、全13資料・17 findings・非`.cadence`のSHA-256不変を確認（2026-07-13）
+- [x] Codex版がplan→並列audit→supervise→COMPLETEを完走し、全13資料・17 findings・非`.cadence`のSHA-256不変を確認（2026-07-13。checkpoint要約のみでrun-idとignored成果物は未保存）
 - [ ] Codexのreadonly hookを`/hooks`でtrusted/enabledにし、一時リポで`.cadence/runs/`外へのstructured `apply_patch`がdenyされることを確認
 - [ ] runbook↔alert対応表の改善後forward-test（実行時のモデル容量不足で未完。決定論契約テストは追加済み）
 - [ ] supervise↔review の**収束監視**（部分的：supervise の判定は機能したが cycle 1 で COMPLETE したため review ループと ABORT は未発火。発火させるには意図的に不完全な監査を返す adversarial フィクスチャが要る→ IMPROVEMENTS.md）

@@ -40,6 +40,7 @@ class InstallTest(unittest.TestCase):
             self.assertIn("/hooks", result.stdout)
             self.assertIn("review/trust", result.stdout)
             self.assertIn("trusted/enabled", result.stdout)
+            self.assertNotIn("AGENTS.override.md", result.stderr)
 
             claude_skill = claude_home / "skills" / "cadence"
             codex_skill = codex_home / "skills" / "cadence"
@@ -65,6 +66,40 @@ class InstallTest(unittest.TestCase):
             self.assertEqual(claude_rules.count("cadence-triage:begin"), 1)
             self.assertEqual(codex_rules.count("cadence-triage:begin"), 1)
             self.assertIn("利用可能な `$cadence`", codex_rules)
+
+    def test_warns_when_codex_agents_override_masks_managed_block(self):
+        with tempfile.TemporaryDirectory() as temp:
+            temp_path = Path(temp)
+            claude_home = temp_path / ".claude"
+            codex_home = temp_path / ".codex"
+            claude_home.mkdir()
+            codex_home.mkdir()
+            (codex_home / "AGENTS.override.md").write_text(
+                "local override\n", encoding="utf-8"
+            )
+
+            env = os.environ.copy()
+            env.update({
+                "HOME": str(temp_path),
+                "CLAUDE_CONFIG_DIR": str(claude_home),
+                "CODEX_HOME": str(codex_home),
+            })
+            result = subprocess.run(
+                ["bash", str(ROOT / "install.sh")],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertIn(str(codex_home / "AGENTS.override.md"), result.stderr)
+            self.assertIn("AGENTS.md", result.stderr)
+            self.assertIn("手動で統合", result.stderr)
+            self.assertIn(
+                "cadence-triage:begin",
+                (codex_home / "AGENTS.md").read_text(encoding="utf-8"),
+            )
 
 
 if __name__ == "__main__":

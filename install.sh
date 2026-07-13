@@ -60,9 +60,14 @@ fi
 
 # CodexグローバルAGENTS.mdには分類を複製せず、CADENCEと$cadenceの接続だけを置く。
 CODEX_TARGET_MD="$CODEX_HOME/AGENTS.md"
+CODEX_OVERRIDE_MD="$CODEX_HOME/AGENTS.override.md"
 CODEX_RULES_FILE="$SRC_DIR/rules/codex-cadence-triage.md"
 CODEX_MARK_BEGIN='<!-- cadence-triage:begin (cadence/install.sh Codex版が管理。手動編集しない — 変更はリポの rules/codex-cadence-triage.md へ) -->'
 CODEX_MARK_END='<!-- cadence-triage:end -->'
+if [ -s "$CODEX_OVERRIDE_MD" ]; then
+  echo "⚠ $CODEX_OVERRIDE_MD が優先されるため、$CODEX_TARGET_MD のCADENCE連携は読み込まれません。" >&2
+  echo "  overrideを維持する場合は $CODEX_RULES_FILE の内容を手動で統合してください。" >&2
+fi
 touch "$CODEX_TARGET_MD"
 if grep -qF -- "$CODEX_MARK_BEGIN" "$CODEX_TARGET_MD"; then
   awk -v begin="$CODEX_MARK_BEGIN" -v end="$CODEX_MARK_END" -v rulefile="$CODEX_RULES_FILE" '
