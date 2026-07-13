@@ -1,21 +1,25 @@
-# PROGRESS — cadence
+# PROGRESS
 
 ## 現在地
-**v0.2**。構造完成＋合成フィクスチャで実走検証済み＋「共通エンジン（このリポ・public）／ドメインフローは各PJ側」の分離まで実装済み。トリアージ注入により、条件に合う依頼では Claude 側から /cadence を提案する運用。
 
-## 完了（直近）
-- 2026-07-06: 大規模改善8コミット（フィクスチャ実走 13/13 検出・バリデータ・readonly hook・収束決定論化・PJローカルフロー対応・トリアージ注入）→ [checkpoint](docs/checkpoints/2026-07-06.md)
+**v0.3**。Claude Code / Codex両ホスト対応が完了し、運用フェーズ。共有flows/references/hookへホスト固有SKILLを重ね、Codexの`CADENCE`分類から`$cadence`へ接続済み。PJドメインフローは`.agents/cadence`を正本、`.claude/cadence`を後方互換とする。
 
 ## 次にやること
-1. **各業務PJへのドメインフロー蒸留**（`references/flow-authoring.md` の手順で。各PJの環境PCで実施）
-2. **実 infra MCP を繋いだ実走**（HANDOFF §4 の残項目。MCP 接続済みPCで）
-3. **readonly-guard hook の有効化**（opt-in。install.sh が表示する設定を各PCの `~/.claude/settings.json` に追記）
-4. **review/ABORT 経路の発火検証**（adversarial フィクスチャが要る → IMPROVEMENTS.md 参照）
-5. （任意）gates・quorum 外注の実地検証
+
+1. runbook↔alert対応表の改善後forward-testを、モデル容量回復後にfresh agentで再実走する
+2. 実infra MCPを繋いだ両ホスト実走を行う（HANDOFF §4）
+3. adversarialフィクスチャでreview/ABORTを発火し、gates/quorum経路も実地確認する
+
+## 完了
+
+- 2026-07-13: Codex版スキル・CADENCE連携・両環境install・共有フロー解決・apply_patch対応hook・15件のAPI不要テスト・実機forward-testを実装 → [checkpoint](docs/checkpoints/2026-07-13.md)
+- 2026-07-06: 大規模改善8コミット（フィクスチャ実走13/13・validator・readonly hook・収束決定論化・PJローカルフロー・トリアージ）→ [checkpoint](docs/checkpoints/2026-07-06.md)
 
 ## ブロッカー
-なし。2は MCP 接続済みPC、1は各業務PCでの作業が前提（このPCでは進められない）。
+
+なし。改善後forward-testの再実走だけ、実行時のモデル容量不足で未完。
 
 ## 運用メモ
-- 進行記録はこのファイル＋`docs/checkpoints/`。ハーネス改善ネタは `IMPROVEMENTS.md`（symlink 経由で全セッションから追記可）。
-- Git: CLAUDE.local.md で1作業ごと自動 push をオプトイン済み（このPCのみ。他PCでは各自作成）。
+
+- 改善候補は`IMPROVEMENTS.md`、確定判断は`NOTES.md`、詳細はcheckpointへ記録する。
+- read-only hookはopt-in。Codexではshell書込みの全経路を遮断しないため、MCP/資格情報/環境の物理境界を優先する。

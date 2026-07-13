@@ -43,7 +43,7 @@ require_human_approval: true   # 変更適用の前(propose)と COMPLETE の前(
 - **persona**: sre-fixer
 - **edit**: yes
 - **instruction**:
-  - 承認された変更**だけ**を**リポのファイル（IaC / runbook / 設定）に** Edit/Write で適用。スコープ外は触らない（scope creep 禁止）。
+  - 承認された変更**だけ**を**リポのファイル（IaC / runbook / 設定）に**ホストで利用可能な編集手段で適用。スコープ外は触らない（scope creep 禁止）。
   - ⚠️ **ライブ本番への適用（`terraform apply` 等のミューテーション）は cadence では行わない**——通常の人が回す変更/デプロイプロセスに委ねる。cadence は source of truth を直すところまで。
   - （opt-in）どうしても MCP の書き込みで適用したい場合のみ、`propose` の承認にその適用も明示的に含めること。既定では行わない。
 - **next**:

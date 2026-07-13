@@ -21,6 +21,7 @@ Documentation that no longer matches reality is itself an incident waiting to ha
 ### Observability & response
 - Alert / SLO coverage and correctness (right signal, right threshold, actually firing?)
 - Runbook accuracy: do documented steps match live reality? (drift)
+- Bidirectional alert/runbook coverage: every P1/P2 runbook has a live trigger, and every paging alert links to a current runbook
 
 ### Capacity & limits
 - Unbounded resource usage; quota / limit headroom; autoscaling bounds

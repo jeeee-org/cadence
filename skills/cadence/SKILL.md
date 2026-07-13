@@ -23,8 +23,9 @@ TAKT の思想（AI の自律に委ねず外側から構造で律する）を Cl
 
 ### 0. フローと対象を決める
 - ユーザー指定のフロー名（既定 `audit-reliability`）の定義を以下の**優先順**で解決して読む：
-  1. **対象PJのローカルフロー**：`<対象PJ>/.claude/cadence/flows/<flow>.md`（そのPJのドメイン知識を編み込んだフロー。PJ のリポで版管理される）
-  2. **同梱フロー**：`~/.claude/skills/cadence/flows/<flow>.md`
+  1. **ホスト共通のPJローカルフロー**：`<対象PJ>/.agents/cadence/flows/<flow>.md`（そのPJのドメイン知識を編み込んだフロー。PJ のリポで版管理される）
+  2. **旧Claude配置（後方互換）**：`<対象PJ>/.claude/cadence/flows/<flow>.md`
+  3. **同梱フロー**：`~/.claude/skills/cadence/flows/<flow>.md`
   同名なら PJ 側が勝つ（オーバーライド）。PJ 側フローの作り方は `references/flow-authoring.md`。
 - フローの `mode`（`read-only` | `edit`）・`initial`・`max_cycles`・各 step（persona / tools / parallel / mcp / instruction / 遷移）を把握する。
 - 監査/調査の**対象スコープ**（どのディレクトリ・どの runbook・どのサービス）をユーザーから受け取る。曖昧なら確認する。
@@ -37,7 +38,7 @@ TAKT の思想（AI の自律に委ねず外側から構造で律する）を Cl
 ### 2. ステートマシンを回す
 `initial` step から開始し、各 step を以下の規約で実行して遷移する：
 
-- **ペルソナを着る**：step の `persona` を〔①`<対象PJ>/.claude/cadence/personas/<persona>.md` → ②`references/personas/<persona>.md`〕の優先順で読み、その役割・価値観・禁止事項に従って step を遂行する（PJ 固有ペルソナは①に置き、supervisor 等の共通ペルソナは②を参照すればよい）。
+- **ペルソナを着る**：step の `persona` を〔①`<対象PJ>/.agents/cadence/personas/<persona>.md` → ②`<対象PJ>/.claude/cadence/personas/<persona>.md`（後方互換）→ ③`references/personas/<persona>.md`〕の優先順で読み、その役割・価値観・禁止事項に従って step を遂行する（PJ 固有ペルソナは①に置き、supervisor 等の共通ペルソナは③を参照すればよい）。
 - **read-only の徹底**（`mode: read-only` または step `edit: no`）：**`Edit`/`Write`/破壊的 Bash を使わない**。閲覧は `Read`/`Glob`/`Grep`/参照系 Bash／MCP のみ。書き換え・適用は行わない（指摘とリスクと修正案を出すだけ）。
   - ⚠️ ただし指示遵守だけに頼らない。read-only は**まず MCP/権限の側で物理的に固める**（下の「read-only の担保方針」）。
 - **並列 step（`parallel: N`）**：対象が多い時は `Task` で**最大 N 個のサブエージェント**を起動し、スコープを分割して並列監査させる（TAKT の team_leader 相当）。各サブエージェントにも read-only と出力フォーマットを明示する。
@@ -103,11 +104,11 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
 - **無人で大改修しない**：1件ずつ、人が見て承認できる粒度で（有人・レビュー前提）。
 
 ## フロー定義の書式（`flows/*.md`）
-各フローは「purpose / mode / initial / max_cycles / steps（persona・tools・parallel・mcp・instruction・遷移）/ convergence / gates(任意) / （edit 系は）human_approval」を持つ。新しいフローを足したい時は、この書式の `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。**PJ のドメイン業務向けフローは cadence 側でなく `<PJ>/.claude/cadence/flows/` に置く**（作り方・蒸留手順は `references/flow-authoring.md`。cadence リポは public なので業務ドメイン知識を持ち込まない）。同梱例：
+各フローは「purpose / mode / initial / max_cycles / steps（persona・tools・parallel・mcp・instruction・遷移）/ convergence / gates(任意) / （edit 系は）human_approval」を持つ。新しいフローを足したい時は、この書式の `flows/<name>.md` を1枚足すだけ（SKILL.md は無改修）。**PJ のドメイン業務向けフローは cadence 側でなく `<PJ>/.agents/cadence/flows/` に置く**（旧 `<PJ>/.claude/cadence/flows/` も後方互換で読める。作り方・蒸留手順は `references/flow-authoring.md`。cadence リポは public なので業務ドメイン知識を持ち込まない）。同梱例：
 - `flows/audit-reliability.md` — SRE read-only 信頼性監査（`mode: read-only`）。
 - `flows/error-analysis.md` — エラー/インシデントの根本原因分析（`mode: read-only`。症状整理→原因候補列挙→証拠で確認/反証→収束。割れたら quorum 外注、再現は決定論ゲート化可）。
 - `flows/investigate-subsystem.md` — サブシステム/モジュールの動作・構造把握（`mode: read-only`。責務/エントリ/制御・データフロー/不変条件/依存/エッジを file:line 接地でマップ。バグ探しでなく正確な理解が目的）。
-- `flows/optimize-context.md` — Claude Code プロジェクトのコンテキスト/指示サーフェス（CLAUDE.md・スキル説明・PROGRESS・memory 残骸）の肥大で精度が落ちた状態を、ルールを失わずスリム化（`mode: edit`・有人承認。常時ロードのトークン削減・重複/矛盾/陳腐の除去・詳細は checkpoint へ退避。"cut bytes, not meaning"）。
+- `flows/optimize-context.md` — Claude Code / Codex プロジェクトのコンテキスト/指示サーフェス（CLAUDE.md / AGENTS.md・スキル説明・PROGRESS・memory 残骸）の肥大で精度が落ちた状態を、ルールを失わずスリム化（`mode: edit`・有人承認。常時ロードのトークン削減・重複/矛盾/陳腐の除去・詳細は checkpoint へ退避。"cut bytes, not meaning"）。
 - `flows/fix-reliability.md` — 信頼性 issue の修正（`mode: edit`・有人承認。audit/RCA の指摘を入力に立案→承認→適用→検証→再レビュー）。
 
 ## 注意・限界
@@ -123,7 +124,7 @@ read-only は **SKILL/persona の指示遵守だけに頼らない**。メイン
 - **追記先**: `~/.claude/skills/cadence/IMPROVEMENTS.md`。これは**リポジトリ側 `IMPROVEMENTS.md` への symlink**（install.sh が作成）。正本は repo にあり git 管理されるので、再インストールでも追記は消えない。symlink が無ければ作る前に install.sh の再実行を検討。
 - **タイミング**: 気づいた**そのターン中**に追記する。「あとで」にしない（次セッションでは忘れる）。
 - **何を書くか**: 1件 = 日付＋状況（どのフロー/対象で気づいたか）＋気づき（不便・欲しい機能・既存フローでカバーできない type のタスク）＋できれば**改善案の方向性**（新フロー追加？ step 規約の補強？ ペルソナ追加？）。
-- **何を書かないか**: 単発のタスク状況（それは PROGRESS.md/checkpoint へ）、特定 PJ のドメイン知見（それは PJ の NOTES.md へ）、**PJ ローカルフロー（`.claude/cadence/flows/`）の改善ネタ**（それは当該 PJ 側——フロー自体の追記か PJ の NOTES.md——へ。フローの観点リストは使うたびに PJ 側で育てる）。ここには**汎用ハーネスとしての改善ネタだけ**を残す。
+- **何を書かないか**: 単発のタスク状況（それは PROGRESS.md/checkpoint へ）、特定 PJ のドメイン知見（それは PJ の NOTES.md へ）、**PJ ローカルフロー（`.agents/cadence/flows/`、旧 `.claude/cadence/flows/`）の改善ネタ**（それは当該 PJ 側——フロー自体の追記か PJ の NOTES.md——へ。フローの観点リストは使うたびに PJ 側で育てる）。ここには**汎用ハーネスとしての改善ネタだけ**を残す。
 - **書式（推奨）**:
   ```
   ## YYYY-MM-DD — <短い要約>

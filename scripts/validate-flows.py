@@ -16,16 +16,29 @@ cadence 自身の思想（LLM 判定でなく exit code で機械判定）を自
 
 使い方:
   scripts/validate-flows.py [--skill-dir skills/cadence]
-  scripts/validate-flows.py --project-dir <PJルート>   # <PJ>/.claude/cadence/flows/ を検証
-                                                       # （persona は PJ→同梱の順で解決）
+  scripts/validate-flows.py --project-dir <PJルート>   # <PJ>/.agents/cadence/flows/ を優先し、
+                                                       # 旧 .claude/cadence/flows/ も検証対象にする
 exit code: 0=全フロー合格 / 1=違反あり
 """
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
 
 TERMINALS = {"COMPLETE", "ABORT"}
+
+
+def resolve_project_flows(project_dir: Path):
+    """PJローカルフローを名前単位で解決する（.agents が .claude に優先）。"""
+    selected = {}
+    for base in (
+        project_dir / ".claude" / "cadence" / "flows",
+        project_dir / ".agents" / "cadence" / "flows",
+    ):
+        for flow in sorted(base.glob("*.md")):
+            selected[flow.name] = flow
+    return [selected[name] for name in sorted(selected)]
 
 
 def parse_flow(text: str):
@@ -125,24 +138,44 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     default_skill = Path(__file__).resolve().parent.parent / "skills" / "cadence"
     ap.add_argument("--skill-dir", type=Path, default=default_skill)
-    ap.add_argument("--project-dir", type=Path, default=None,
-                    help="PJルート。<PJ>/.claude/cadence/flows/ を検証（persona は PJ→同梱の順で解決）")
+    ap.add_argument(
+        "--project-dir",
+        type=Path,
+        default=None,
+        help="PJルート。.agents/cadence を優先し、.claude/cadence を後方互換で解決",
+    )
     args = ap.parse_args()
 
     # persona の解決順：PJローカル →（このリポの）同梱 → インストール済みグローバル
-    personas_dirs = [
-        args.skill_dir / "references" / "personas",
-        Path.home() / ".claude" / "skills" / "cadence" / "references" / "personas",
-    ]
+    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    personas_dirs = [args.skill_dir / "references" / "personas"]
     if args.project_dir:
-        flows_dir = args.project_dir / ".claude" / "cadence" / "flows"
-        personas_dirs.insert(0, args.project_dir / ".claude" / "cadence" / "personas")
+        flows = resolve_project_flows(args.project_dir)
+        personas_dirs = [
+            args.project_dir / ".agents" / "cadence" / "personas",
+            args.project_dir / ".claude" / "cadence" / "personas",
+            *personas_dirs,
+        ]
     else:
         flows_dir = args.skill_dir / "flows"
+        flows = sorted(flows_dir.glob("*.md"))
 
-    flows = sorted(flows_dir.glob("*.md"))
+    personas_dirs.extend([
+        Path.home() / ".agents" / "skills" / "cadence" / "references" / "personas",
+        codex_home / "skills" / "cadence" / "references" / "personas",
+        Path.home() / ".claude" / "skills" / "cadence" / "references" / "personas",
+    ])
+
     if not flows:
-        print(f"NG: フローが見つからない: {flows_dir}", file=sys.stderr)
+        if args.project_dir:
+            locations = (
+                args.project_dir / ".agents" / "cadence" / "flows",
+                args.project_dir / ".claude" / "cadence" / "flows",
+            )
+            where = " / ".join(str(path) for path in locations)
+        else:
+            where = str(args.skill_dir / "flows")
+        print(f"NG: フローが見つからない: {where}", file=sys.stderr)
         return 1
 
     failed = False

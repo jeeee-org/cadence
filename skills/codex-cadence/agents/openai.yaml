@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cadence"
+  short_description: "構造化ループで監査・調査・定型修正を証跡付きで収束まで実行"
+  default_prompt: "$cadence を使って、対象を構造化フローで監査し、証跡付きで収束まで進めてください。"

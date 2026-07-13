@@ -18,8 +18,9 @@ fixtures/
 ```
 
 ## 使い方
-```
+```text
 /cadence audit-reliability fixtures/target
+# Codex: $cadence を使って audit-reliability で fixtures/target を監査して
 ```
 のように監査対象を `fixtures/target` にし、フローの `mcp: infra` の代替として
 **`fixtures/live-state/*.json` を「MCP から取得したライブ状態」と見なして Read する**。
